@@ -86,8 +86,6 @@ rand_forest = RandomForestClassifier(n_estimators=100)
 rand_forest = rand_forest.fit(Xdf_train, Ydf_train['default_Yes'])
 rand_forest_pred = pd.DataFrame(rand_forest.predict(Xdf_test))
 
-print pd.DataFrame(rand_forest.feature_importances_, columns = ["Imp"], index = Xdf_train.columns).sort(['Imp'], ascending = False)
-
 #confusion matrix
 cm = confusion_matrix(Ydf_test['default_Yes'],rand_forest_pred)
 print(cm)
@@ -106,7 +104,7 @@ plt.show()
 #########################################################################################
 #########################################################################################
 #########################################################################################
-#ADAboost tree classification
+#decision tree classification
 adaboost=AdaBoostClassifier(n_estimators=100)
 adaboost=adaboost.fit(Xdf_train, Ydf_train['default_Yes'])
 adaboost_pred=pd.DataFrame(adaboost.predict(Xdf_test))
