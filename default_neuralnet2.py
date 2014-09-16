@@ -100,9 +100,49 @@ print alldata.getClass(1)
 
 #########################################################################################
 #########################################################################################
-#use the quick start neural network to train using backward propagation and classify
-from pybrain.supervised.trainers import BackpropTrainer
-net = buildNetwork(trndata.indim, 30, trndata.outdim, bias=True, hiddenclass=SoftmaxLayer)
+#########################################################################################
+#########################################################################################
+#construct the network
+from pybrain.structure import FeedForwardNetwork
+net=FeedForwardNetwork()
+
+#constructing the input, hidden and output layers
+from pybrain.structure import LinearLayer, SigmoidLayer
+inLayer = LinearLayer(3,name="input_nodes")
+hiddenLayer1 = SigmoidLayer(3,name="hidden_nodes1")
+hiddenLayer2 = SigmoidLayer(3,name="hidden_nodes1")
+outLayer = LinearLayer(2,name="output_node")
+
+#add layers to the network
+net.addInputModule(inLayer)
+net.addModule(hiddenLayer1)
+net.addModule(hiddenLayer2)
+net.addOutputModule(outLayer)
+
+#explicitly determine how the layers should be connected
+from pybrain.structure import FullConnection
+in_to_hidden = FullConnection(inLayer, hiddenLayer1)
+hidden_to_hidden = FullConnection(hiddenLayer1, hiddenLayer2)
+hidden_to_out = FullConnection(hiddenLayer2, outLayer)
+
+#add the connections to the network
+net.addConnection(in_to_hidden)
+net.addConnection(hidden_to_hidden)
+net.addConnection(hidden_to_out)
+net.sortModules()
+
+print net
+
+#feed an input to the network
+#the weights/parameters of the connections have already been initialized randomly
+net.activate([1, 2, 3])
+#show the parameters of the connections
+in_to_hidden.params
+hidden_to_out.params
+#this will show all of the parameters in a single array
+net.params
+
+
 trainer = BackpropTrainer(net, trndata,learningrate=0.01, lrdecay=1.0, momentum=0.0)
 trainer.train()
 #apply trained network to computing error in training set
@@ -114,24 +154,3 @@ print("  train error: %5.4f%%" % trnresult)
 #test_output=trainer.testOnClassData(dataset=tstdata,verbose=False,return_targets=True)
 tstresult = percentError( trainer.testOnClassData(dataset=tstdata),tstdata['class'] )
 print("  test error: %5.4f%%" % tstresult)
-#trainer.trainUntilConvergence()
-#########################################################################################
-#########################################################################################
-#########################################################################################
-#build a feed-forward network with _ hidden units. We use the shortcut buildNetwork() for this. The input and output layer size must match the dataset’s input and target dimension. You could add additional hidden layers by inserting more numbers giving the desired layer sizes.
-fnn = buildNetwork( trndata.indim, 30, trndata.outdim, outclass=SoftmaxLayer )
-
-#Set up a trainer that basically takes the network and training dataset as input. For a list of trainers, see trainers. We are using a BackpropTrainer for this.
-trainer = BackpropTrainer( fnn, dataset=trndata, momentum=0.1, verbose=True, weightdecay=0.01)
-
-#Start the training iterations.
-for i in range(30):
-    trainer.trainEpochs( 1 )
-    #Evaluate the network on the training and test data
-    trnresult = percentError( trainer.testOnClassData(),trndata['class'] )
-    tstresult = percentError( trainer.testOnClassData(dataset=tstdata ), tstdata['class'] )
-
-    print "epoch: %4d" % trainer.totalepochs, \
-        "  train error: %5.4f%%" % trnresult, \
-        "  test error: %5.4f%%" % tstresult
-
